@@ -1,0 +1,69 @@
+services:
+  api:
+    container_name: cakra-api
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+      - "5555:5555"
+    env_file:
+      - ./api/.env
+    networks:
+      - proxy_network
+      - cakra_network
+    depends_on:
+      - db
+    restart: always
+
+  client:
+    container_name: cakra-client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BACKEND_LOCAL=https://api.ponpesalamin.com/api/v1.0
+    env_file:
+      - ./client/.env
+    networks:
+      - proxy_network
+      - cakra_network
+    restart: always
+
+  ai:
+    container_name: cakra-ai
+    build:
+      context: "./AI Services"
+      dockerfile: Dockerfile
+    # INI KUNCI UTAMANYA: AI akan langsung memakai jaringan server, bukan jaringan Docker
+    network_mode: "host" 
+    env_file:
+      - "./AI Services/.env"
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    container_name: cakra-db
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432" # Port ini dibuka agar AI (di mode host) bisa masuk ke database
+    environment:
+      POSTGRES_DB: db_cakra
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - cakra_db_data:/var/lib/postgresql/data
+    networks:
+      - cakra_network
+    restart: always
+
+networks:
+  proxy_network:
+    external: true
+    name: proxy_network
+  cakra_network:
+    driver: bridge
+
+volumes:
+  cakra_db_data:
