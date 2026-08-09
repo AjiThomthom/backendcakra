@@ -1,0 +1,9 @@
+ultralytics
+opencv-python-headless
+aiortc
+onnxruntime
+fastapi
+uvicorn
+httpx
+cryptography
+prisma

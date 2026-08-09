@@ -1,0 +1,73 @@
+generator client {
+  provider                    = "prisma-client-py"
+  previewFeatures             = ["prismaSchemaFolder"]
+  enable_experimental_decimal = "true"
+  recursive_type_depth        = "5"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ccvtv {
+  cctv_id              String         @id @default(uuid())
+  camera_name          String
+  source_url           String
+  latitude             Decimal
+  category             CategoryCamera
+  longitude            Decimal
+  location_description String
+  created_at           DateTime
+}
+
+model Accounts {
+  account_id String   @id @default(uuid())
+  created_at DateTime @default(now()) @map("created_at")
+  password   String
+  username   String   @unique
+  Profile    Profile?
+
+  @@map("accounts")
+}
+
+model Profile {
+  profile_id   String   @id @default(uuid())
+  account_id   String   @unique
+  number_phone String
+  fullname     String
+  role         Role     @default(VISITOR)
+  email        String
+  created_at   DateTime @default(now()) @map("created_at")
+  account      Accounts @relation(fields: [account_id], references: [account_id])
+
+  @@map("profile")
+}
+
+model Incident_Tragedy {
+  incident_id   String       @id @default(uuid())
+  date_incident DateTime
+  camera_name   String
+  image_url     String       @default("https://img.magnific.com/vektor-premium/rusak_313674-37129.jpg")
+  status        ReviewStatus @default(PENDING)
+  created_at    DateTime     @default(now()) @map("created_at")
+
+  @@map("incident_tragedy")
+}
+
+enum ReviewStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum Role {
+  OWNER
+  STAFF
+  VISITOR
+}
+
+enum CategoryCamera {
+  PUBLIC
+  PRIVATE
+}
